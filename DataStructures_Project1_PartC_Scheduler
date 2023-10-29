@@ -1,0 +1,64 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <algorithm>
+#include <functional> // for std::greater
+#include <utility> // for std::pair
+using std::vector;
+using std::cin;
+using std::cout;
+using std::priority_queue;
+using std::pair;
+using std::make_pair;
+
+class JobQueue {
+ private:
+  int num_workers_;
+  vector<int> jobs_;
+  vector<int> assigned_workers_;
+  vector<long long> start_times_;
+
+  void WriteResponse() const {
+    for (int i = 0; i < jobs_.size(); ++i) {
+      cout << assigned_workers_[i] << " " << start_times_[i] << "\n";
+    }
+  }
+
+  void ReadData() {
+    int m;
+    cin >> num_workers_ >> m;
+    jobs_.resize(m);
+    for(int i = 0; i < m; ++i)
+      cin >> jobs_[i];
+  }
+
+  void AssignJobs() {
+    assigned_workers_.resize(jobs_.size());
+    start_times_.resize(jobs_.size());
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, std::greater<pair<long long, int>>> next_free_time; // create a min-heap (priority queue) to keep track of next free time for each worker
+    for (int i = 0; i < num_workers_; ++i) {
+      next_free_time.push(make_pair(0, i)); // initially, all workers are free, so their next free time is 0
+    }
+    for (int i = 0; i < jobs_.size(); ++i) {
+      int duration = jobs_[i];
+      pair<long long, int> next_worker = next_free_time.top();
+      next_free_time.pop();
+      assigned_workers_[i] = next_worker.second;
+      start_times_[i] = next_worker.first;
+      next_free_time.push(make_pair(next_worker.first + duration, next_worker.second));
+    }
+  }
+
+ public:
+  void Solve() {
+    ReadData();
+    AssignJobs();
+    WriteResponse();
+  }
+};
+
+int main() {
+  JobQueue job_queue;
+  job_queue.Solve();
+  return 0;
+}
